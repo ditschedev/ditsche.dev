@@ -6,9 +6,9 @@ const prettier = require('prettier');
 (async () => {
   const prettierConfig = await prettier.resolveConfig('./.prettierrc.js');
   const pages = await globby([
-    'pages/*.js',
+    'pages/*.jsx',
     'data/**/*.mdx',
-    '!pages/_*.js',
+    '!pages/_*.jsx',
     '!pages/api'
   ]);
 
@@ -20,7 +20,7 @@ const prettier = require('prettier');
                 const path = page
                   .replace('pages', '')
                   .replace('data', '')
-                  .replace('.js', '')
+                  .replace('.jsx', '')
                   .replace('.mdx', '');
                 const route = path === '/index' ? '' : path;
 

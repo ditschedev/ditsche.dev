@@ -18,8 +18,8 @@ export default function Container(props) {
   const { children, ...customMeta } = props;
   const router = useRouter();
   const meta = {
-    title: 'Toby Christopher – Developer, writer, creator.',
-    description: `Front-end developer, JavaScript enthusiast, and course creator.`,
+    title: 'Toby Christopher – Developer, writer, photographer.',
+    description: `Software developer, Photography enthusiast, and content creator.`,
     image: 'https://ditsche.dev/static/images/banner.png',
     type: 'website',
     ...customMeta

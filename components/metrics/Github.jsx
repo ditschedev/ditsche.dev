@@ -10,5 +10,5 @@ export default function Github() {
   const stars = format(data?.stars);
   const link = 'https://github.com/ditschedev';
 
-  return <StatsWrapper header="Github Stars" link={link} metric={stars} />;
+  return <StatsWrapper header="Github Stars" link={link} metric="15" />;
 }

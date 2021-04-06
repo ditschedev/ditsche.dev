@@ -17,15 +17,12 @@ export default function Home({ posts }) {
 
   return (
     <Container
-      title={`Welcome – Toby Christopher`}
-      description="This is my personal website and blog. I write about tech stuff, mostly covering things about Kubernetes or Spring Boot. Happy reading!"
-      image={`https://ditsche.dev/static/images/og.png`}
     >
       <div className="flex flex-col justify-center items-center max-w-3xl mx-auto text-center mb-16">
         <div className="w-40 h-40 rounded-full mb-12 bg-primary-50 dark:bg-gray-900 flex items-center justify-center">
           <Image src="/static/images/memoji.png" alt="Memoji of myself" width="164" height="164" />
         </div>
-        <h2 className="text-2xl font-semibold mb-6 text-gray-700 dark:text-gray-300">Hi, I'm Toby 🤙</h2>
+        <h2 className="text-2xl font-semibold mb-6 text-gray-700 dark:text-gray-300">Hi, I'm Toby!</h2>
         <h1 className="text-gray-800 dark:text-primary-100 text-3xl sm:text-5xl md:text-6xl font-black leading-tight">
           Developing <TextMarker size="sm">software</TextMarker>. <br/>
           Designing <TextMarker size="sm">applications</TextMarker>. <br/>

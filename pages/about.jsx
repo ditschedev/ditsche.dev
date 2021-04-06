@@ -4,7 +4,11 @@ import Container from '@/components/Container';
 
 export default function About() {
   return (
-    <Container title="About – Toby Christopher">
+    <Container
+      title="About – Toby Christopher"
+      description="Everything you need to know about me."
+      image={`https://ditsche.dev/static/images/about/og.png`}
+    >
       <div className="flex flex-col justify-center items-start max-w-3xl w-full mx-auto mb-16">
         <h1 className="font-bold text-3xl md:text-5xl tracking-tight mb-4 text-black dark:text-white">
           About Me

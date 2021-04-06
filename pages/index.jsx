@@ -16,7 +16,11 @@ export default function Home({ posts }) {
     ).slice(0, 3);
 
   return (
-    <Container>
+    <Container
+      title={`Welcome – Toby Christopher`}
+      description="This is my personal website and blog. I write about tech stuff, mostly covering things about Kubernetes or Spring Boot. Happy reading!"
+      image={`https://ditsche.dev/static/images/og.png`}
+    >
       <div className="flex flex-col justify-center items-center max-w-3xl mx-auto text-center mb-16">
         <div className="w-40 h-40 rounded-full mb-12 bg-primary-50 dark:bg-gray-900 flex items-center justify-center">
           <Image src="/static/images/memoji.png" alt="Memoji of myself" width="164" height="164" />

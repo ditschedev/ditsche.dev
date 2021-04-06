@@ -1,0 +1,212 @@
+---
+title: 'Deploy PostgreSQL to your Kubernetes cluster'
+publishedAt: '2021-04-05'
+summary: "In this article we'll go through the process of deploying a stateful PostgreSQL server on your Kubernetes cluster. We will be writing the deployment files by ourselves and won't use predefined helm charts."
+image: '/static/images/postgres-on-kubernetes/og.png'
+tags:
+- kubernetes
+- postgres
+- docker
+- guide
+- deployment
+---
+
+We all know and love the flexibility [Kubernetes](https://kubernetes.io/) has given us. For those that lived in a cave for the past few years: Kubernetes is an orchestration system
+for automating deployment, scaling, and management of containerized applications. It works like a charm for stateless applications like APIs or
+frontend applications, but deploying stateful services like a database with the need for persistent storage opens up new challenges.
+
+In the following, we'll go through the necessary steps to run your own [PostgreSQL](https://www.postgresql.org/) instance on your cluster and have an easily customizable configuration on
+hand for the future. Let's get started, shall we?
+
+## Prerequisites
+Of course, you'll need
+- a working Kubernetes Cluster
+- basic understanding of docker
+
+but that's not the only thing you'll need. As we have to create persistent volumes and want to reach our database from outside the cluster,
+you'll need to have access to some sort of [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) and the ability to spin up an
+[Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) or [LoadBalancer](https://kubernetes.io/docs/concepts/services-networking/service/#loadbalancer).
+
+## Configuration
+We will be using the latest official [PostgreSQL 13.2](https://hub.docker.com/_/postgres?tab=description) docker image based on alpine. Alpine is a really (really!) small Linux distro that acts as a base for
+other docker images.
+
+Next up we need to define the global configuration for our database. This includes the name of the database and the username and password of the admin user.
+```yaml:postgres.configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  labels:
+    app: postgres
+data:
+  POSTGRES_DB: MY_DATABASE_NAME
+  POSTGRES_USER: MY_USERNAME
+  POSTGRES_PASSWORD: MY_PASSWORD
+```
+
+Please replace the placeholders `MY_DATABASE_NAME`, `MY_USERNAME`, and `MY_PASSWORD` with your desired values.
+
+Once replaced we can deploy the map to our cluster.
+```shell
+$ kubectl apply -f postgres.configmap.yaml
+```
+
+## Persistent storage
+Docker containers are ephemeral by nature, meaning, that all the generated data by the container instance will be lost after its termination.
+To make the data persistent, we will use [Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) and [Persistent Volume Claims](https://kubernetes.io/docs/concepts/storage/persistent-volumes/).
+Those are resources within Kubernetes to store data.
+
+The following file describes the storage we want to use. We declare a local path `/mnt/data` and request `5Gi` of space.
+
+```yaml:postgres.storage.yaml
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: postgres-pv
+  labels:
+    type: local
+    app: postgres
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/mnt/data"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgres-pvc
+  labels:
+    app: postgres
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+```
+
+If you want to use another `StorageClass`, then that's pretty easy. Just replace `manual` with the name of your storage class. My cluster is hosted on [Hetzner Cloud](https://www.hetzner.com/de/cloud)
+and I am using their [CSI Driver](https://github.com/hetznercloud/csi-driver) `hcloud-volumes`.
+
+Feel free to update the capacity and path of your volume and afterwords deploy it.
+```shell
+$ kubectl apply -f postgres.storage.yaml
+```
+
+## PostgreSQL Instance
+Now that we got all the necessary resources for our cluster we can deploy our PostgreSQL container. It'll make use of the `ConfigMap` and
+the volume that we created before.
+
+```yaml:postgres.deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:13.2-alpine
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: postgres-config
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgresdb
+          resources:
+            requests:
+              memory: "80Mi"
+              cpu: "250m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+      volumes:
+        - name: postgresdb
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+```
+
+Make sure to use the right image and names across all files. As you may have seen, the container gets a limitation in resources. For testing purposes
+the numbers are really low, just to keep more space on the cluster. When deploying to production you'll need to adjust those limitations and reserved
+resources to your needs.
+
+Now start your PostgreSQL instance!
+```shell
+$ kubectl apply -f postgres.deployment.yaml
+```
+
+
+## Access the database
+To access the PostgreSQL instance externally, we need a service of type `LoadBalancer` or an Ingress. For this guide, we'll stick with the LoadBalancer.
+Below you'll find a basic skeleton of a LoadBalancer deployment. Depending on your provider and cluster you may have to add certain annotations to make
+the automatic provisioning work.
+
+```yaml:postgres.service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  type: LoadBalancer
+  ports:
+   - port: 5432
+  selector:
+   app: postgres
+```
+
+Let's make our database available!
+```shell
+$ kubectl apply -f postgres.service.yaml
+```
+
+## Connect to the database
+
+After deploying the LoadBalancer we need to wait for it to spin up and get an external IP address. Check your services to get the IP address assigned
+to the LoadBalancer.
+
+```shell
+$ kubectl get svc
+NAME         TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
+postgres     LoadBalancer   10.43.149.69    167.233.12.13   5432:32490/TCP   7s
+```
+
+Now that we have the IP address, we can connect to it using the `psql` CLI tool.
+
+```shell
+$ psql -h 167.233.12.13 -U MY_USERNAME --password -p 5432 MY_DATABASE_NAME
+
+psql (13.2)
+Type "help" for help.
+
+MY_DATABASE_NAME=#
+```
+
+## Conclusion
+We configured and deployed a single PostgreSQL instance to our Kubernetes Cluster, handled the problems of persistent storage, and made it publicly
+available through a LoadBalancer. Running PostgreSQL on Kubernetes has a lot of advantages, such as better resource utilization, better isolation of applications
+using the database, and scalability.
+
+Though I have to say, that this is a "beginners" guide to PostgreSQL on Kubernetes. Once we take scalability and availability into consideration
+[StatefulSets](https://kubernetes.io/blog/2017/02/postgresql-clusters-kubernetes-statefulsets/) are required. This is a Kubernetes resource for scaling
+stateful applications, such as a database like PostgreSQL. Using a stateful set makes PostgreSQL easily scalable using a single command!

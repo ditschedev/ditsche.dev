@@ -16,6 +16,7 @@ export default function BlogLayout({ children, frontMatter, next, previous }) {
       image={`https://ditsche.dev${frontMatter.image}`}
       date={new Date(frontMatter.publishedAt).toISOString()}
       type="article"
+      {...frontMatter}
     >
       <article className="flex flex-col justify-center items-start max-w-3xl mx-auto mb-16 w-full">
         <p className="text-base text-gray-500 mb-2">

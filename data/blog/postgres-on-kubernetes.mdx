@@ -11,11 +11,11 @@ tags:
 - deployment
 ---
 
-We all know and love the flexibility Kubernetes has given us. For those that lived in a cave for the past few years: Kubernetes is an orchestration system
+We all know and love the flexibility [Kubernetes](https://kubernetes.io/) has given us. For those that lived in a cave for the past few years: Kubernetes is an orchestration system
 for automating deployment, scaling, and management of containerized applications. It works like a charm for stateless applications like APIs or
 frontend applications, but deploying stateful services like a database with the need for persistent storage opens up new challenges.
 
-In the following, we'll go through the necessary steps to run your own PostgreSQL instance on your cluster and have an easily customizable configuration on
+In the following, we'll go through the necessary steps to run your own [PostgreSQL](https://www.postgresql.org/) instance on your cluster and have an easily customizable configuration on
 hand for the future. Let's get started, shall we?
 
 ## Prerequisites
@@ -53,7 +53,7 @@ $ kubectl apply -f postgres.configmap.yaml
 ```
 
 ## Persistent storage
-Docker containers are ephemeral by nature. This means, that all the generated data by the container instance will be lost after its termination.
+Docker containers are ephemeral by nature, meaning, that all the generated data by the container instance will be lost after its termination.
 To make the data persistent, we will use [Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) and [Persistent Volume Claims](https://kubernetes.io/docs/concepts/storage/persistent-volumes/).
 Those are resources within Kubernetes to store data.
 
@@ -92,7 +92,7 @@ spec:
 ```
 
 If you want to use another `StorageClass`, then that's pretty easy. Just replace `manual` with the name of your storage class. My cluster is hosted on [Hetzner Cloud](https://www.hetzner.com/de/cloud)
-and I am using their CSI Driver `hcloud-volumes`.
+and I am using their [CSI Driver](https://github.com/hetznercloud/csi-driver) `hcloud-volumes`.
 
 Feel free to update the capacity and path of your volume and afterwords deploy it.
 ```shell

@@ -1,10 +1,10 @@
 import '@/styles/tailwind.css';
 
 import { ThemeProvider } from 'next-themes';
-import { useFathom } from '@/lib/fathom';
+import { usePanelbear } from '@/lib/panelbear';
 
 export default function App({ Component, pageProps }) {
-  useFathom();
+  usePanelbear(process.env.NEXT_PUBLIC_PANELBEAR_SITE_ID);
 
   return (
     <ThemeProvider attribute="class">

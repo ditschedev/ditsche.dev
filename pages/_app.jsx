@@ -4,7 +4,7 @@ import { ThemeProvider } from 'next-themes';
 import { usePanelbear } from '@/lib/panelbear';
 
 export default function App({ Component, pageProps }) {
-  usePanelbear(process.env.NEXT_PUBLIC_PANELBEAR_SITE_ID);
+  usePanelbear("IRoWUQ6VJYi");
 
   return (
     <ThemeProvider attribute="class">

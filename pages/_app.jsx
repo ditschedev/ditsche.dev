@@ -1,14 +1,14 @@
 import '@/styles/tailwind.css';
 
 import { ThemeProvider } from 'next-themes';
-import { usePanelbear } from '@/lib/panelbear';
+import { Analytics } from "@vercel/analytics/next"
 
 export default function App({ Component, pageProps }) {
-  usePanelbear("IRoWUQ6VJYi");
 
   return (
     <ThemeProvider attribute="class">
       <Component {...pageProps} />
+      <Analytics />
     </ThemeProvider>
   );
 }

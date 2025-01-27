@@ -12,16 +12,6 @@ class MyDocument extends Document {
             type="font/woff2"
             crossOrigin="anonymous"
           />
-          <link
-            rel="preconnect"
-            href="https://cdn.usefathom.com"
-            crossOrigin=""
-          />
-          <link
-            rel="preconnect"
-            href="https://stats.ditsche.dev"
-            crossOrigin=""
-          />
           <link href="/static/favicons/favicon.ico" rel="shortcut icon" />
           <link href="/static/favicons/site.webmanifest" rel="manifest" />
           <link
